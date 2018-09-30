@@ -35,7 +35,36 @@ apt-mark hold \
 
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 kubeadm config images pull
-modprobe ip_vs ip_vs_rr ip_vs_wrr ip_vs_sh nf_conntrack_ipv4
+
+# load modules for current session
+
+modprobe br_netfilter \
+    ip_vs \
+    ip_vs_rr \
+    ip_vs_wrr \
+    ip_vs_sh \
+    nf_conntrack_ipv4
+
+# modules persistence on every boot
+
+cat <<EOF >/etc/modules
+br_netfilter
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack_ipv4
+EOF
+
+# ensure iptables rules
+
+cat <<EOF >/etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sysctl --system
 
 cat <<EOF >> ${HOME}/.tmux.conf
 set -g default-terminal "screen-256color"
