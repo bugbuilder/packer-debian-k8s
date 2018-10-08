@@ -34,7 +34,6 @@ apt-mark hold \
  kubectl
 
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-kubeadm config images pull
 
 # load modules for current session
 
